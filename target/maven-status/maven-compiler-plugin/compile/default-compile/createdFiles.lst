@@ -1,0 +1,16 @@
+br\com\sistemamatriculas\enums\StatusMatricula.class
+br\com\sistemamatriculas\Main.class
+br\com\sistemamatriculas\model\PeriodoMatricula.class
+br\com\sistemamatriculas\model\SemestreLetivo.class
+br\com\sistemamatriculas\model\CurriculoSemestral.class
+br\com\sistemamatriculas\model\Curso.class
+br\com\sistemamatriculas\model\ItemMatricula.class
+br\com\sistemamatriculas\model\Disciplina.class
+br\com\sistemamatriculas\model\Secretaria.class
+br\com\sistemamatriculas\enums\TipoOpcao.class
+br\com\sistemamatriculas\model\MatriculaSemestral.class
+br\com\sistemamatriculas\model\Professor.class
+br\com\sistemamatriculas\model\OfertaDisciplina.class
+br\com\sistemamatriculas\model\Usuario.class
+br\com\sistemamatriculas\enums\StatusOfertaDisciplina.class
+br\com\sistemamatriculas\model\Aluno.class

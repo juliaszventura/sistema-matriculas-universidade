@@ -1,0 +1,16 @@
+C:\sistema-matriculas-universidade\src\main\java\br\com\sistemamatriculas\enums\StatusMatricula.java
+C:\sistema-matriculas-universidade\src\main\java\br\com\sistemamatriculas\enums\StatusOfertaDisciplina.java
+C:\sistema-matriculas-universidade\src\main\java\br\com\sistemamatriculas\enums\TipoOpcao.java
+C:\sistema-matriculas-universidade\src\main\java\br\com\sistemamatriculas\Main.java
+C:\sistema-matriculas-universidade\src\main\java\br\com\sistemamatriculas\model\Aluno.java
+C:\sistema-matriculas-universidade\src\main\java\br\com\sistemamatriculas\model\CurriculoSemestral.java
+C:\sistema-matriculas-universidade\src\main\java\br\com\sistemamatriculas\model\Curso.java
+C:\sistema-matriculas-universidade\src\main\java\br\com\sistemamatriculas\model\Disciplina.java
+C:\sistema-matriculas-universidade\src\main\java\br\com\sistemamatriculas\model\ItemMatricula.java
+C:\sistema-matriculas-universidade\src\main\java\br\com\sistemamatriculas\model\MatriculaSemestral.java
+C:\sistema-matriculas-universidade\src\main\java\br\com\sistemamatriculas\model\OfertaDisciplina.java
+C:\sistema-matriculas-universidade\src\main\java\br\com\sistemamatriculas\model\PeriodoMatricula.java
+C:\sistema-matriculas-universidade\src\main\java\br\com\sistemamatriculas\model\Professor.java
+C:\sistema-matriculas-universidade\src\main\java\br\com\sistemamatriculas\model\Secretaria.java
+C:\sistema-matriculas-universidade\src\main\java\br\com\sistemamatriculas\model\SemestreLetivo.java
+C:\sistema-matriculas-universidade\src\main\java\br\com\sistemamatriculas\model\Usuario.java
