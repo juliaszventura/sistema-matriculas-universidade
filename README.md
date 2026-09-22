@@ -73,7 +73,7 @@ Fornecer uma solução centralizada que permita:
 - 🔑 Todos os usuários (aluno, professor, secretaria) possuem login e senha para acesso.
 ## 🗺️ Diagrama de Caso de Uso
  
-> _(inserir o diagrama)_
+![Diagrama de Caso de Uso](docs/sistema-matriculas.drawio.png)
  
 ## 🛠️ Como executar
  
