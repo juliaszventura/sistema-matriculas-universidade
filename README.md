@@ -71,9 +71,14 @@ Fornecer uma solução centralizada que permita:
 - 🚫 O número máximo de alunos por disciplina é **60**; ao atingir esse limite, as inscrições são encerradas automaticamente.
 - 📩 Toda matrícula realizada dispara uma notificação ao sistema de cobranças.
 - 🔑 Todos os usuários (aluno, professor, secretaria) possuem login e senha para acesso.
+- 
 ## 🗺️ Diagrama de Caso de Uso
  
 ![Diagrama de Caso de Uso](docs/sistema-matriculas.drawio.png)
+
+## 🧩 Diagrama de Classes
+
+![Diagrama de Classes](docs/diagrama-classes.png)
  
 ## 🛠️ Como executar
  
@@ -82,7 +87,7 @@ Fornecer uma solução centralizada que permita:
 ## 🚀 Status do Projeto
  
 - [x] Lab01S01 — Diagrama de Caso de Uso + Histórias de Usuário
-- [ ] Lab01S02 — Diagrama de Classes + stub do projeto Java
+- [x] Lab01S02 — Diagrama de Classes + stub do projeto Java
 - [ ] Lab01S03 — Protótipo funcional (interface + persistência)
 
 ## ✍️ Autores
