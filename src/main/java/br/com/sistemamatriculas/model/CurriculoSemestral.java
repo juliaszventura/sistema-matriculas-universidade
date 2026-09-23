@@ -1,10 +1,13 @@
 package br.com.sistemamatriculas.model;
 
 import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CurriculoSemestral {
     private Long id;
     private Date dataGeracao;
+    private List<OfertaDisciplina> ofertas = new ArrayList<>();
     
     public CurriculoSemestral(Long id, Date dataGeracao) {
         this.id = id;

@@ -1,15 +1,15 @@
 package br.com.sistemamatriculas.model;
 
 import java.time.LocalDate;
-
+import br.com.sistemamatriculas.enums.StatusMatricula;
 import br.com.sistemamatriculas.enums.TipoOpcao;
 
 public class ItemMatricula {
 
     private Long id;
     private TipoOpcao tipo;
+    private StatusMatricula status;
     private LocalDate dataInclusao;
-
     private OfertaDisciplina ofertaDisciplina;
 
     public ItemMatricula(
@@ -22,6 +22,7 @@ public class ItemMatricula {
         this.tipo = tipo;
         this.dataInclusao = dataInclusao;
         this.ofertaDisciplina = ofertaDisciplina;
+        this.status = StatusMatricula.ATIVA;
     }
 
     public Long getId() {
@@ -55,4 +56,8 @@ public class ItemMatricula {
     public void setOfertaDisciplina(OfertaDisciplina ofertaDisciplina) {
         this.ofertaDisciplina = ofertaDisciplina;
     }
+
+    public StatusMatricula getStatus() { return status; }
+
+    public void setStatus(StatusMatricula status) { this.status = status; }
 }

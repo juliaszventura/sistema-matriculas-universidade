@@ -5,12 +5,9 @@ public class SemestreLetivo {
     private int periodo;
     private PeriodoMatricula periodoMatricula;
 
-    public SemestreLetivo(int ano, int periodo) {
+    public SemestreLetivo(int ano, int periodo, PeriodoMatricula periodoMatricula) {
         this.ano = ano;
         this.periodo = periodo;
-    }
-
-    public SemestreLetivo(PeriodoMatricula periodoMatricula) {
         this.periodoMatricula = periodoMatricula;
     }
 
@@ -43,5 +40,4 @@ public class SemestreLetivo {
         this.periodoMatricula = periodoMatricula;
     }
 
-    
 }

@@ -2,6 +2,7 @@ package br.com.sistemamatriculas.model;
 
 import java.util.Date;
 import java.util.List;
+import java.util.ArrayList;
 
 import br.com.sistemamatriculas.enums.TipoOpcao;
 
@@ -9,7 +10,7 @@ public class MatriculaSemestral {
     private Long id;
     private Date dataMatricula;
     private SemestreLetivo semestreLetivo;
-    private List<ItemMatricula> itens;
+    private List<ItemMatricula> itens = new ArrayList<>();
     
     public MatriculaSemestral(Long id, Date dataMatricula) {
         this.id = id;
@@ -41,7 +42,7 @@ public class MatriculaSemestral {
     }
 
     public List<ItemMatricula> getItens() {
-        return null;
+        return itens;
     }
 
     public void setId(Long id) {

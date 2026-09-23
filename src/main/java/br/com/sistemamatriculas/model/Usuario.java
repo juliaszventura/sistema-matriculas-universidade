@@ -29,11 +29,11 @@ public abstract class Usuario {
         this.id = id;
     }
 
-    public String getnome() {
+    public String getNome() {
         return nome;
     }
 
-    public void setnome(String nome) {
+    public void setNome(String nome) {
         this.nome = nome;
     }
 
@@ -45,11 +45,11 @@ public abstract class Usuario {
         this.login = login;
     }
 
-    public String getsenha() {
+    public String getSenha() {
         return senha;
     }
 
-    public void setsenha(String senha) {
+    public void setSenha(String senha) {
         this.senha = senha;
     }
 }
