@@ -11,6 +11,7 @@ public class MatriculaSemestral {
     private Date dataMatricula;
     private SemestreLetivo semestreLetivo;
     private List<ItemMatricula> itens = new ArrayList<>();
+    private SistemaCobranca sistemaCobranca;
     
     public MatriculaSemestral(Long id, Date dataMatricula) {
         this.id = id;
@@ -61,6 +62,8 @@ public class MatriculaSemestral {
         this.itens = itens;
     }
 
-    
+    public void setSistemaCobranca(SistemaCobranca sistemaCobranca) {
+        this.sistemaCobranca = sistemaCobranca;
+    }
 
 }

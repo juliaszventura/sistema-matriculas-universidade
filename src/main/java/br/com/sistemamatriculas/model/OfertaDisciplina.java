@@ -5,13 +5,15 @@ import br.com.sistemamatriculas.enums.StatusOfertaDisciplina;
 public class OfertaDisciplina {
     private Long id;
     private Disciplina disciplina;
+    private Professor professor;
     private int vagasMaximas = 60;
     private int minimoAlunos = 3;
     private StatusOfertaDisciplina status;
 
-    public OfertaDisciplina(Long id, Disciplina disciplina) {
+    public OfertaDisciplina(Long id, Disciplina disciplina, Professor professor) {
         this.id = id;
         this.disciplina = disciplina;
+        this.professor = professor;
         this.status = StatusOfertaDisciplina.PREVISTA;
     }
 
@@ -41,6 +43,14 @@ public class OfertaDisciplina {
 
     public Disciplina getDisciplina() {
         return disciplina;
+    }
+
+    public Professor getProfessor() {
+        return professor;
+    }
+
+    public void setProfessor(Professor professor) {
+        this.professor = professor;
     }
 
     public StatusOfertaDisciplina getStatus() {

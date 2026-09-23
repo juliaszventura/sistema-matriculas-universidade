@@ -14,19 +14,19 @@ public class Secretaria extends Usuario {
         return null;
     }
 
-    public void gerenciarCursos() {
+    public void gerenciarCursos(Curso curso) {
         // TODO: implementar
     }
 
-    public void gerenciarDisciplinas() {
+    public void gerenciarDisciplinas(Disciplina disciplina) {
         // TODO: implementar
     }
 
-    public void gerenciarProfessores() {
+    public void gerenciarProfessores(Professor professor) {
         // TODO: implementar
     }
 
-    public void gerenciarAlunos() {
+    public void gerenciarAlunos(Aluno aluno) {
         // TODO: implementar
     }
 
