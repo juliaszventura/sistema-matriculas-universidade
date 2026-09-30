@@ -9,15 +9,19 @@ Sistema para informatizar o processo de matrículas de uma universidade: gestão
 ---
  
 ## 📌 Sumário
- 
+
 - [📖 Sobre](#-sobre)
 - [🎯 Objetivo](#-objetivo)
 - [👥 Atores](#-atores)
 - [📝 Histórias de Usuário](#-histórias-de-usuário)
 - [⚙️ Regras de Negócio](#️-regras-de-negócio)
 - [🗺️ Diagrama de Caso de Uso](#️-diagrama-de-caso-de-uso)
+- [🧩 Diagrama de Classes](#-diagrama-de-classes)
+- [💾 Persistência de Dados](#-persistência-de-dados)
+- [📁 Estrutura do Projeto](#-estrutura-do-projeto)
 - [🛠️ Como executar](#️-como-executar)
 - [🚀 Status do Projeto](#-status-do-projeto)
+- [✍️ Autores](#️-autores)
 ---
  
 ## 📖 Sobre
@@ -31,7 +35,7 @@ Fornecer uma solução centralizada que permita:
 - ✅ Cadastrar cursos, disciplinas e professores
 - ✅ Controlar períodos de matrícula por semestre
 - ✅ Permitir que alunos se matriculem e cancelem disciplinas
-- ✅ Aplicar automaticamente as regras de ativação/cancelamento de turmas
+- ✅ Aplicar regras de ativação e cancelamento de turmas conforme o número de alunos inscritos
 - ✅ Notificar o sistema de cobranças a cada matrícula
 - ✅ Permitir que professores consultem suas turmas
 ## 👥 Atores
@@ -43,21 +47,28 @@ Fornecer uma solução centralizada que permita:
 | 👩‍🏫 **Professor** | Realiza login e consulta os alunos matriculados em suas disciplinas |
 | 💰 **Sistema de Cobranças** *(externo)* | Recebe notificações para cobrar os alunos matriculados |
  
-## 📝 Histórias de Usuário
+## 📁 Estrutura do Projeto
+
+```text
+src/main/java/br/com/sistemamatriculas/
+├── model/        # Entidades e regras de domínio
+├── enums/        # Enumerações utilizadas pelo sistema
+├── repository/   # Persistência dos dados em arquivos
+├── util/         # Utilitários da aplicação
+└── Main.java     # Interface e fluxo principal pelo terminal
+```
  
 ### 🏫 Secretaria
  
 - Como secretaria, quero cadastrar um curso com nome e número de créditos, para que ele fique disponível no sistema.
 - Como secretaria, quero cadastrar disciplinas vinculadas a um curso, para compor o currículo de cada semestre.
 - Como secretaria, quero cadastrar professores no sistema, para vinculá-los às disciplinas que lecionam.
-- Como secretaria, quero definir o período de matrículas de cada semestre, para controlar quando alunos podem se inscrever ou cancelar disciplinas.
 ### 🎒 Aluno
  
 - Como aluno, quero fazer login no sistema, para acessar minhas funcionalidades de matrícula.
 - Como aluno, quero me matricular em até 4 disciplinas obrigatórias (1ª opção), para cumprir meu currículo do semestre.
 - Como aluno, quero me matricular em até 2 disciplinas optativas (2ª opção), para complementar minha formação.
 - Como aluno, quero cancelar uma matrícula feita anteriormente, dentro do período de matrículas, caso eu mude de ideia.
-- Como aluno, quero visualizar as disciplinas em que estou matriculado, para acompanhar minha situação no semestre.
 ### 👩‍🏫 Professor
  
 - Como professor, quero fazer login no sistema, para acessar minhas funcionalidades.
@@ -71,6 +82,26 @@ Fornecer uma solução centralizada que permita:
 - 🚫 O número máximo de alunos por disciplina é **60**; ao atingir esse limite, as inscrições são encerradas automaticamente.
 - 📩 Toda matrícula realizada dispara uma notificação ao sistema de cobranças.
 - 🔑 Todos os usuários (aluno, professor, secretaria) possuem login e senha para acesso.
+
+## 💾 Persistência de Dados
+
+O sistema utiliza persistência local em arquivos `.txt`.
+
+Os dados são armazenados na pasta `dados/`, criada automaticamente durante a execução da aplicação.
+
+São persistidos dados referentes a:
+
+- usuários;
+- cursos;
+- disciplinas;
+- semestres letivos;
+- ofertas de disciplinas;
+- matrículas semestrais;
+- itens de matrícula;
+- currículos semestrais.
+
+As classes responsáveis pelo acesso aos arquivos estão localizadas no pacote `repository`.
+
 ## 🗺️ Diagrama de Caso de Uso
  
 ![Diagrama de Caso de Uso](docs/sistema-matriculas.drawio.png)
@@ -80,14 +111,52 @@ Fornecer uma solução centralizada que permita:
 ![Diagrama de Classes](docs/diagrama-classes.png)
  
 ## 🛠️ Como executar
- 
-> _(a preencher)_
+
+### Pré-requisitos
+
+Antes de executar o projeto, certifique-se de possuir instalado:
+
+- Java JDK 17 ou superior;
+- Apache Maven;
+- Git.
+
+### 1. Clone o repositório
+
+```bash
+git clone https://github.com/juliaszventura/sistema-matriculas-universidade.git
+```
+
+### 2. Acesse a pasta do projeto
+
+```bash
+cd sistema-matriculas-universidade
+```
+
+### 3. Compile o projeto
+
+```bash
+mvn clean compile
+```
+
+### 4. Execute a aplicação
+
+```bash
+java -cp target/classes br.com.sistemamatriculas.Main
+```
+
+A aplicação será executada diretamente pelo terminal, onde será possível criar uma conta e acessar as funcionalidades de acordo com o tipo de usuário:
+
+- Aluno;
+- Professor;
+- Secretaria.
+
+Os dados cadastrados durante a utilização do sistema são armazenados localmente em arquivos `.txt` na pasta `dados/`, criada automaticamente pela aplicação.
  
 ## 🚀 Status do Projeto
  
 - [x] Lab01S01 — Diagrama de Caso de Uso + Histórias de Usuário
 - [x] Lab01S02 — Diagrama de Classes + stub do projeto Java
-- [ ] Lab01S03 — Protótipo funcional (interface + persistência)
+- [x] Lab01S03 — Protótipo funcional (interface + persistência)
 
 ## ✍️ Autores
  
