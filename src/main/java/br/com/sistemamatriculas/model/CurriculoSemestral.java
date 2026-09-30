@@ -1,10 +1,11 @@
 package br.com.sistemamatriculas.model;
 
-import java.util.Date;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class CurriculoSemestral {
+
     private Long id;
     private Date dataGeracao;
     private List<OfertaDisciplina> ofertas = new ArrayList<>();
@@ -24,11 +25,13 @@ public class CurriculoSemestral {
     }
 
     public void removerOferta(OfertaDisciplina ofertaDisciplina) {
-        ofertas.remove(ofertaDisciplina);
-    }
+        if (ofertaDisciplina == null) {
+            throw new IllegalArgumentException(
+                    "A oferta não pode ser nula."
+            );
+        }
 
-    public List<OfertaDisciplina> getOfertas() {
-        return ofertas;
+        ofertas.remove(ofertaDisciplina);
     }
 
     public Long getId() {
@@ -47,4 +50,15 @@ public class CurriculoSemestral {
         this.dataGeracao = dataGeracao;
     }
 
+    public List<OfertaDisciplina> getOfertas() {
+        return ofertas;
+    }
+
+    public void setOfertas(List<OfertaDisciplina> ofertas) {
+        if (ofertas == null) {
+            this.ofertas = new ArrayList<>();
+        } else {
+            this.ofertas = ofertas;
+        }
+    }
 }

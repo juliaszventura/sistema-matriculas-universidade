@@ -9,9 +9,8 @@ public class PeriodoMatricula {
     private LocalDate dataFim;
 
     public PeriodoMatricula(
-        LocalDate dataInicio,
-        LocalDate dataFim
-    ) {
+            LocalDate dataInicio,
+            LocalDate dataFim) {
         this.dataInicio = dataInicio;
         this.dataFim = dataFim;
     }
@@ -38,4 +37,5 @@ public class PeriodoMatricula {
     public void setDataFim(LocalDate dataFim) {
         this.dataFim = dataFim;
     }
+
 }

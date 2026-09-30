@@ -16,11 +16,22 @@ public abstract class Usuario {
 
     public boolean autenticar(String loginInformado, String senhaInformada) {
         if (login == null || senha == null) {
-            return false;
+            throw new IllegalArgumentException("O login e a senha precisam ser informados.");
         }
 
-        return login.equals(loginInformado)
-                && senha.equals(senhaInformada);
+        boolean isAuthenticated = this.login.equals(loginInformado) && this.senha.equals(senhaInformada);
+
+        return isAuthenticated;
+    }
+
+    public void realizarLogin(String login, String senha) {
+        boolean userAuthenticated = this.login.equals(login) && this.senha.equals(senha);
+
+        if (userAuthenticated) {
+            System.out.println("Usuário logado!");
+        } else {
+            System.out.println("Login e/ou senha inválidos.");
+        }
     }
 
     public Long getId() {
