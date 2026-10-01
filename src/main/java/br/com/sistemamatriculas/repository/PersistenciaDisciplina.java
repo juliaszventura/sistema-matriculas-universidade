@@ -5,6 +5,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.com.sistemamatriculas.enums.TipoOpcao;
+import br.com.sistemamatriculas.model.Curso;
 import br.com.sistemamatriculas.model.Disciplina;
 
 public class PersistenciaDisciplina {
@@ -12,7 +14,7 @@ public class PersistenciaDisciplina {
     private static final Path ARQUIVO =
             Path.of("dados", "disciplina.txt");
 
-    public static List<Disciplina> carregar() {
+    public static List<Disciplina> carregar(List<Curso> cursos) {
 
         List<Disciplina> disciplinas =
                 new ArrayList<>();
@@ -35,12 +37,50 @@ public class PersistenciaDisciplina {
                 String[] dados =
                         linha.split(";", -1);
 
+                Curso curso = null;
+
+                if (dados.length > 4
+                        && !dados[4].isBlank()) {
+
+                    int codigoCurso =
+                            Integer.parseInt(dados[4]);
+
+                    for (Curso c : cursos) {
+
+                        if (c.getCodigo() == codigoCurso) {
+                            curso = c;
+                            break;
+                        }
+                    }
+
+                    if (curso == null) {
+
+                        throw new IllegalStateException(
+                                "Curso "
+                                        + codigoCurso
+                                        + " da disciplina "
+                                        + dados[0]
+                                        + " nao encontrado."
+                        );
+                    }
+                }
+
+                TipoOpcao tipo = TipoOpcao.OBRIGATORIA;
+
+                if (dados.length > 5
+                        && !dados[5].isBlank()) {
+
+                    tipo = TipoOpcao.valueOf(dados[5]);
+                }
+
                 Disciplina disciplina =
                         new Disciplina(
                                 Integer.parseInt(dados[0]),
                                 dados[1],
                                 Integer.parseInt(dados[2]),
-                                Integer.parseInt(dados[3])
+                                Integer.parseInt(dados[3]),
+                                curso,
+                                tipo
                         );
 
                 disciplinas.add(disciplina);
@@ -64,11 +104,19 @@ public class PersistenciaDisciplina {
 
         for (Disciplina disciplina : disciplinas) {
 
+            String codigoCurso =
+                    disciplina.getCurso() != null
+                            ? String.valueOf(
+                            disciplina.getCurso().getCodigo())
+                            : "";
+
             String linha =
                     disciplina.getCodigo() + ";"
-                    + disciplina.getNome() + ";"
-                    + disciplina.getCreditos() + ";"
-                    + disciplina.getCargaHoraria();
+                            + disciplina.getNome() + ";"
+                            + disciplina.getCreditos() + ";"
+                            + disciplina.getCargaHoraria() + ";"
+                            + codigoCurso + ";"
+                            + disciplina.getTipo();
 
             linhas.add(linha);
         }

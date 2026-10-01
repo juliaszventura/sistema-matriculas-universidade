@@ -6,6 +6,19 @@ import br.com.sistemamatriculas.enums.TipoOpcao;
 
 public class ItemMatricula {
 
+    private static long ultimoId = 0;
+
+    public static synchronized Long proximoId() {
+        return ++ultimoId;
+    }
+
+    private static synchronized void registrarId(Long id) {
+
+        if (id != null && id > ultimoId) {
+            ultimoId = id;
+        }
+    }
+
     private Long id;
     private TipoOpcao tipo;
     private LocalDate dataInclusao;
@@ -24,6 +37,8 @@ public class ItemMatricula {
         this.dataInclusao = dataInclusao;
         this.matriculaSemestral = matriculaSemestral;
         this.ofertaDisciplina = ofertaDisciplina;
+
+        registrarId(id);
     }
 
     public Long getId() {

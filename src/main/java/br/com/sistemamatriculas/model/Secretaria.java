@@ -1,8 +1,6 @@
 package br.com.sistemamatriculas.model;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -17,6 +15,7 @@ public class Secretaria extends Usuario {
     private List<Disciplina> disciplinas;
     private List<Professor> professores;
     private List<Aluno> alunos;
+    private List<OfertaDisciplina> ofertas;
 
     public Secretaria(
             Long id,
@@ -33,6 +32,7 @@ public class Secretaria extends Usuario {
         this.disciplinas = new ArrayList<>();
         this.professores = new ArrayList<>();
         this.alunos = new ArrayList<>();
+        this.ofertas = new ArrayList<>();
     }
 
     public CurriculoSemestral gerarCurriculo(SemestreLetivo semestre) {
@@ -53,69 +53,77 @@ public class Secretaria extends Usuario {
         return curriculo;
     }
 
+    public void gerenciarOfertas(OfertaDisciplina oferta) {
+
+        if (oferta == null) {
+            throw new IllegalArgumentException(
+                    "A oferta nao pode ser nula.");
+        }
+
+        boolean existe = false;
+
+        for (OfertaDisciplina o : ofertas) {
+
+            if (o.getId().equals(oferta.getId())) {
+                existe = true;
+                break;
+            }
+        }
+
+        if (existe) {
+
+            ofertas.removeIf(
+                    o -> o.getId().equals(oferta.getId()));
+
+        } else {
+
+            ofertas.add(oferta);
+        }
+    }
+
+    public void encerrarPeriodoMatriculas(SemestreLetivo semestre) {
+
+        if (semestre == null) {
+            throw new IllegalArgumentException(
+                    "O semestre letivo nao pode ser nulo.");
+        }
+
+        for (OfertaDisciplina oferta : semestre.getOfertas()) {
+            oferta.avaliarAtivacao();
+        }
+
+        if (semestre.getPeriodoMatricula() != null) {
+
+            semestre.getPeriodoMatricula()
+                    .setDataFim(LocalDate.now().minusDays(1));
+        }
+    }
+
     public void gerenciarCursos(Curso curso) {
 
         if (curso == null) {
             throw new IllegalArgumentException(
-                    "O curso não pode ser nulo.");
+                    "O curso nao pode ser nulo.");
         }
 
-        Path arquivo = Path.of("dados", "cursos.txt");
+        boolean existe = false;
 
-        try {
+        for (Curso c : cursos) {
 
-            Files.createDirectories(arquivo.getParent());
-
-            List<String> linhas = new ArrayList<>();
-
-            if (Files.exists(arquivo)) {
-                linhas.addAll(Files.readAllLines(arquivo));
+            if (c.getCodigo() == curso.getCodigo()) {
+                existe = true;
+                break;
             }
+        }
 
-            String inicioLinha = curso.getCodigo() + ";";
+        if (existe) {
 
-            boolean existe = false;
+            cursos.removeIf(
+                    c -> c.getCodigo() == curso.getCodigo());
 
-            for (String linha : linhas) {
+        } else {
 
-                if (linha.startsWith(inicioLinha)) {
-                    existe = true;
-                    break;
-                }
-            }
-
-            if (existe) {
-
-                linhas.removeIf(
-                        linha -> linha.startsWith(inicioLinha));
-
-                cursos.removeIf(
-                        c -> c.getCodigo() == curso.getCodigo());
-
-                System.out.println(
-                        "Curso removido com sucesso.");
-
-            } else {
-
-                String linha = curso.getCodigo() + ";"
-                        + curso.getNome() + ";"
-                        + curso.getNumeroCreditos();
-
-                linhas.add(linha);
-
-                cursos.add(curso);
-
-                System.out.println(
-                        "Curso adicionado com sucesso.");
-            }
-
-            Files.write(arquivo, linhas);
-
-        } catch (IOException e) {
-
-            throw new RuntimeException(
-                    "Erro ao gerenciar cursos.",
-                    e);
+            cursos.add(curso);
         }
     }
 
@@ -123,70 +131,29 @@ public class Secretaria extends Usuario {
 
         if (disciplina == null) {
             throw new IllegalArgumentException(
-                    "A disciplina não pode ser nula.");
+                    "A disciplina nao pode ser nula.");
         }
 
-        Path arquivo = Path.of(
-                "dados",
-                "disciplinas.txt");
+        boolean existe = false;
 
-        try {
+        for (Disciplina d : disciplinas) {
 
-            Files.createDirectories(
-                    arquivo.getParent());
-
-            List<String> linhas = new ArrayList<>();
-
-            if (Files.exists(arquivo)) {
-                linhas.addAll(
-                        Files.readAllLines(arquivo));
+            if (d.getCodigo() == disciplina.getCodigo()) {
+                existe = true;
+                break;
             }
+        }
 
-            String inicioLinha = disciplina.getCodigo() + ";";
+        if (existe) {
 
-            boolean existe = false;
+            disciplinas.removeIf(
+                    d -> d.getCodigo() == disciplina.getCodigo());
 
-            for (String linha : linhas) {
+            disciplina.setCurso(null);
 
-                if (linha.startsWith(inicioLinha)) {
-                    existe = true;
-                    break;
-                }
-            }
+        } else {
 
-            if (existe) {
-
-                linhas.removeIf(
-                        linha -> linha.startsWith(inicioLinha));
-
-                disciplinas.removeIf(
-                        d -> d.getCodigo() == disciplina.getCodigo());
-
-                System.out.println(
-                        "Disciplina removida com sucesso.");
-
-            } else {
-
-                String linha = disciplina.getCodigo() + ";"
-                        + disciplina.getNome() + ";"
-                        + disciplina.getCreditos() + ";"
-                        + disciplina.getCargaHoraria();
-
-                linhas.add(linha);
-
-                disciplinas.add(disciplina);
-
-                System.out.println(
-                        "Disciplina adicionada com sucesso.");
-            }
-
-            Files.write(arquivo, linhas);
-
-        } catch (IOException e) {
-
-            throw new RuntimeException(
-                    "Erro ao gerenciar disciplinas.",
-                    e);
+            disciplinas.add(disciplina);
         }
     }
 
@@ -206,7 +173,7 @@ public class Secretaria extends Usuario {
 
             if (usuario instanceof Professor p
                     && p.getRegistro().equals(
-                            professor.getRegistro())) {
+                    professor.getRegistro())) {
 
                 encontrado = p;
                 break;
@@ -220,7 +187,7 @@ public class Secretaria extends Usuario {
             usuarios.removeIf(
                     usuario -> usuario instanceof Professor p
                             && p.getRegistro().equals(
-                                    professorRemover.getRegistro()));
+                            professorRemover.getRegistro()));
 
             professores.removeIf(
                     p -> p.getRegistro().equals(
@@ -257,7 +224,7 @@ public class Secretaria extends Usuario {
 
             if (usuario instanceof Aluno a
                     && a.getMatricula().equals(
-                            aluno.getMatricula())) {
+                    aluno.getMatricula())) {
 
                 encontrado = true;
                 break;
@@ -269,7 +236,7 @@ public class Secretaria extends Usuario {
             usuarios.removeIf(
                     usuario -> usuario instanceof Aluno a
                             && a.getMatricula().equals(
-                                    aluno.getMatricula()));
+                            aluno.getMatricula()));
 
             alunos.removeIf(
                     a -> a.getMatricula().equals(
@@ -315,5 +282,9 @@ public class Secretaria extends Usuario {
 
     public List<Aluno> getAlunos() {
         return alunos;
+    }
+
+    public List<OfertaDisciplina> getOfertas() {
+        return ofertas;
     }
 }

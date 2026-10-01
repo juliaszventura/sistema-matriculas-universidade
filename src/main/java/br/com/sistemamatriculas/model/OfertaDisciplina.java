@@ -94,6 +94,14 @@ public class OfertaDisciplina {
         }
 
         itensMatricula.remove(item);
+
+        // Se a oferta estava encerrada por lotacao, a vaga liberada reabre
+        // as inscricoes.
+        if (status == StatusOfertaDisciplina.ENCERRADA
+                && totalInscritos() < vagasMaximas) {
+
+            status = StatusOfertaDisciplina.PREVISTA;
+        }
     }
 
     public void encerrarInscricoes() {

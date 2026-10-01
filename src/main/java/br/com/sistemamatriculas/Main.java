@@ -36,10 +36,10 @@ public class Main {
 
         List<Usuario> usuarios = PersistenciaUsuario.carregar();
 
-        List<Disciplina> disciplinas = PersistenciaDisciplina.carregar();
+        List<Curso> cursos = PersistenciaCurso.carregar();
 
-        List<Curso> cursos = PersistenciaCurso.carregar(
-                disciplinas);
+        List<Disciplina> disciplinas = PersistenciaDisciplina.carregar(
+                cursos);
 
         List<SemestreLetivo> semestres = PersistenciaSemestreLetivo.carregar();
 
@@ -213,24 +213,34 @@ public class Main {
         ConsoleUI.sucesso(
                 "Bem-vindo(a), " + usuarioLogado.getNome() + "!");
 
-        if (usuarioLogado instanceof Aluno) {
+        if (usuarioLogado instanceof Aluno aluno) {
 
-            menuAluno((Aluno) usuarioLogado);
+            MatriculaSemestral matriculaDoSemestre = obterOuCriarMatricula(
+                    aluno,
+                    semestre,
+                    matriculas);
 
-        } else if (usuarioLogado instanceof Professor) {
+            menuAluno(
+                    aluno,
+                    matriculaDoSemestre,
+                    matriculas);
+
+        } else if (usuarioLogado instanceof Professor professor) {
 
             menuProfessor(
-                    (Professor) usuarioLogado,
+                    professor,
                     ofertas);
 
-        } else if (usuarioLogado instanceof Secretaria) {
+        } else if (usuarioLogado instanceof Secretaria secretariaLogada) {
 
             menuSecretaria(
-                    (Secretaria) usuarioLogado,
+                    secretariaLogada,
                     cursos,
                     disciplinas,
                     usuarios,
                     semestre,
+                    semestres,
+                    ofertas,
                     curriculos);
         }
 
@@ -254,23 +264,73 @@ public class Main {
         return null;
     }
 
-    private static void menuAluno(Aluno aluno) {
+    private static MatriculaSemestral obterOuCriarMatricula(
+            Aluno aluno,
+            SemestreLetivo semestre,
+            List<MatriculaSemestral> matriculas) {
+
+        for (MatriculaSemestral matricula : aluno.getMatriculas()) {
+
+            SemestreLetivo semestreDaMatricula =
+                    matricula.getSemestreLetivo();
+
+            if (semestreDaMatricula != null
+                    && semestreDaMatricula.getAno() == semestre.getAno()
+                    && semestreDaMatricula.getPeriodo() == semestre.getPeriodo()) {
+
+                return matricula;
+            }
+        }
+
+        long maiorId = 0;
+
+        for (MatriculaSemestral matricula : matriculas) {
+
+            if (matricula.getId() != null
+                    && matricula.getId() > maiorId) {
+
+                maiorId = matricula.getId();
+            }
+        }
+
+        MatriculaSemestral nova = new MatriculaSemestral(
+                maiorId + 1,
+                LocalDate.now(),
+                semestre);
+
+        aluno.realizarMatricula(nova);
+
+        matriculas.add(nova);
+
+        PersistenciaMatriculaSemestral.salvar(matriculas);
+
+        return nova;
+    }
+
+    private static void menuAluno(
+            Aluno aluno,
+            MatriculaSemestral matricula,
+            List<MatriculaSemestral> matriculas) {
+
         boolean continuar = true;
 
         while (continuar) {
+
             ConsoleUI.menu("Menu do Aluno", List.of(
                     "Ver disciplinas disponíveis",
                     "Matricular em disciplina",
                     "Cancelar matrícula",
+                    "Ver minhas disciplinas",
                     "Sair"));
 
             int opcao = lerOpcao();
 
             switch (opcao) {
                 case 1 -> consultarDisciplinas(aluno);
-                case 2 -> realizarMatricula(aluno);
-                case 3 -> cancelarMatricula(aluno);
-                case 4 -> continuar = false;
+                case 2 -> realizarMatricula(aluno, matricula, matriculas);
+                case 3 -> cancelarMatricula(matricula, matriculas);
+                case 4 -> visualizarMinhasDisciplinas(matricula);
+                case 5 -> continuar = false;
                 default -> ConsoleUI.erro("Opção inválida.");
             }
         }
@@ -290,16 +350,57 @@ public class Main {
             linhas.add(List.of(
                     String.valueOf(i + 1),
                     o.getDisciplina().getNome(),
+                    o.getDisciplina().getTipo().toString(),
                     o.getProfessor().getNome(),
                     o.totalInscritos() + "/" + o.getVagasMaximas(),
                     o.getStatus().toString()));
         }
 
         ConsoleUI.secao("Disciplinas Disponíveis");
-        ConsoleUI.tabela(List.of("#", "Disciplina", "Professor", "Vagas", "Status"), linhas);
+        ConsoleUI.tabela(
+                List.of("#", "Disciplina", "Tipo", "Professor", "Vagas", "Status"),
+                linhas);
     }
 
-    private static void realizarMatricula(Aluno aluno) {
+    private static void visualizarMinhasDisciplinas(
+            MatriculaSemestral matricula) {
+
+        List<ItemMatricula> itens = matricula.getItens();
+
+        if (itens.isEmpty()) {
+            ConsoleUI.aviso(
+                    "Você ainda não está matriculado em nenhuma disciplina.");
+            return;
+        }
+
+        List<List<String>> linhas = new ArrayList<>();
+
+        for (int i = 0; i < itens.size(); i++) {
+
+            ItemMatricula item = itens.get(i);
+
+            linhas.add(List.of(
+                    String.valueOf(i + 1),
+                    item.getOfertaDisciplina().getDisciplina().getNome(),
+                    item.getTipo().toString(),
+                    item.getOfertaDisciplina().getProfessor().getNome(),
+                    item.getDataInclusao().toString()));
+        }
+
+        ConsoleUI.secao(
+                "Minhas Disciplinas — "
+                        + matricula.getSemestreLetivo().descricao());
+
+        ConsoleUI.tabela(
+                List.of("#", "Disciplina", "Tipo", "Professor", "Inclusão"),
+                linhas);
+    }
+
+    private static void realizarMatricula(
+            Aluno aluno,
+            MatriculaSemestral matricula,
+            List<MatriculaSemestral> matriculas) {
+
         List<OfertaDisciplina> disponiveis = aluno.consultarDisciplinasDisponiveis();
 
         if (disponiveis.isEmpty()) {
@@ -308,6 +409,7 @@ public class Main {
         }
 
         consultarDisciplinas(aluno);
+
         System.out.print("Número da disciplina para matricular (0 para cancelar): ");
         int escolha = lerOpcao();
 
@@ -322,33 +424,36 @@ public class Main {
 
         OfertaDisciplina oferta = disponiveis.get(escolha - 1);
 
-        System.out.print("Tipo [1] Obrigatória  [2] Optativa: ");
-        int tipoEscolhido = lerOpcao();
-        TipoOpcao tipo = (tipoEscolhido == 2) ? TipoOpcao.OPTATIVA : TipoOpcao.OBRIGATORIA;
-
-        if (aluno.getMatriculas().isEmpty()) {
-            ConsoleUI.erro("Aluno não possui matrícula semestral ativa.");
-            return;
-        }
-
-        MatriculaSemestral matriculaAtual = aluno.getMatriculas().get(0);
-
         try {
-            matriculaAtual.adicionarItem(oferta, tipo);
-            matriculaAtual.notificarCobranca();
-            ConsoleUI.sucesso("Matrícula em \"" + oferta.getDisciplina().getNome() + "\" realizada com sucesso!");
+            matricula.adicionarItem(oferta);
+
+            PersistenciaMatriculaSemestral.salvar(matriculas);
+            PersistenciaItemMatricula.salvar(matriculas);
+
+            ConsoleUI.sucesso(
+                    "Matrícula em \""
+                            + oferta.getDisciplina().getNome()
+                            + "\" ("
+                            + oferta.getDisciplina().getTipo()
+                            + ") realizada com sucesso!");
+
         } catch (IllegalArgumentException | IllegalStateException e) {
             ConsoleUI.erro(e.getMessage());
         }
     }
 
-    private static void cancelarMatricula(Aluno aluno) {
-        if (aluno.getMatriculas().isEmpty() || aluno.getMatriculas().get(0).getItens().isEmpty()) {
+    private static void cancelarMatricula(
+            MatriculaSemestral matricula,
+            List<MatriculaSemestral> matriculas) {
+
+        List<ItemMatricula> itens = matricula.getItens();
+
+        if (itens.isEmpty()) {
             ConsoleUI.aviso("Você não possui disciplinas matriculadas para cancelar.");
             return;
         }
 
-        List<ItemMatricula> itens = aluno.getMatriculas().get(0).getItens();
+        visualizarMinhasDisciplinas(matricula);
 
         System.out.print("Número da disciplina para cancelar (0 para voltar): ");
         int escolha = lerOpcao();
@@ -365,9 +470,13 @@ public class Main {
         ItemMatricula item = itens.get(escolha - 1);
 
         try {
-            aluno.cancelarMatricula(item);
+            matricula.cancelarItem(item);
+
+            PersistenciaItemMatricula.salvar(matriculas);
+
             ConsoleUI.sucesso("Matrícula cancelada com sucesso!");
-        } catch (IllegalArgumentException e) {
+
+        } catch (IllegalArgumentException | IllegalStateException e) {
             ConsoleUI.erro(e.getMessage());
         }
     }
@@ -438,6 +547,8 @@ public class Main {
             List<Disciplina> disciplinas,
             List<Usuario> usuarios,
             SemestreLetivo semestre,
+            List<SemestreLetivo> semestres,
+            List<OfertaDisciplina> ofertas,
             List<CurriculoSemestral> curriculos) {
 
         boolean continuar = true;
@@ -450,8 +561,10 @@ public class Main {
                             "Gerar currículo semestral",
                             "Gerenciar cursos",
                             "Gerenciar disciplinas",
+                            "Gerenciar ofertas de disciplina",
                             "Gerenciar professores",
                             "Gerenciar alunos",
+                            "Encerrar período de matrículas",
                             "Visualizar cadastros",
                             "Sair"));
 
@@ -464,8 +577,17 @@ public class Main {
                     CurriculoSemestral curriculo = secretaria.gerarCurriculo(
                             semestre);
 
+                    curriculos.add(curriculo);
+
+                    PersistenciaCurriculoSemestral.salvar(
+                            curriculos);
+
                     ConsoleUI.sucesso(
-                            "Currículo semestral gerado com sucesso.");
+                            "Currículo de "
+                                    + semestre.descricao()
+                                    + " gerado com "
+                                    + curriculo.getOfertas().size()
+                                    + " oferta(s).");
                 }
 
                 case 2 -> {
@@ -543,14 +665,41 @@ public class Main {
                             List.of(
                                     "Adicionar disciplina",
                                     "Remover disciplina",
+                                    "Alterar tipo (obrigatória/optativa)",
                                     "Voltar"));
 
                     int escolha = lerOpcao();
 
                     if (escolha == 1) {
 
+                        if (cursos.isEmpty()) {
+
+                            ConsoleUI.erro(
+                                    "Cadastre um curso antes de cadastrar disciplinas.");
+
+                            continue;
+                        }
+
                         System.out.print("Código: ");
                         int codigo = lerOpcao();
+
+                        boolean codigoEmUso = false;
+
+                        for (Disciplina d : disciplinas) {
+
+                            if (d.getCodigo() == codigo) {
+                                codigoEmUso = true;
+                                break;
+                            }
+                        }
+
+                        if (codigoEmUso) {
+
+                            ConsoleUI.erro(
+                                    "Já existe uma disciplina com esse código.");
+
+                            continue;
+                        }
 
                         System.out.print("Nome: ");
                         String nome = SC.nextLine().trim();
@@ -563,11 +712,56 @@ public class Main {
 
                         int cargaHoraria = lerOpcao();
 
+                        System.out.print(
+                                "Tipo [1] Obrigatória  [2] Optativa: ");
+
+                        int tipoEscolhido = lerOpcao();
+
+                        if (tipoEscolhido != 1 && tipoEscolhido != 2) {
+
+                            ConsoleUI.erro(
+                                    "Tipo inválido. Disciplina não cadastrada.");
+
+                            continue;
+                        }
+
+                        TipoOpcao tipoDisciplina =
+                                tipoEscolhido == 2
+                                        ? TipoOpcao.OPTATIVA
+                                        : TipoOpcao.OBRIGATORIA;
+
+                        visualizarCursos(cursos);
+
+                        System.out.print(
+                                "Código do curso ao qual a disciplina pertence: ");
+
+                        int codigoCurso = lerOpcao();
+
+                        Curso curso = null;
+
+                        for (Curso c : cursos) {
+
+                            if (c.getCodigo() == codigoCurso) {
+                                curso = c;
+                                break;
+                            }
+                        }
+
+                        if (curso == null) {
+
+                            ConsoleUI.erro(
+                                    "Curso não encontrado. Disciplina não cadastrada.");
+
+                            continue;
+                        }
+
                         Disciplina novaDisciplina = new Disciplina(
                                 codigo,
                                 nome,
                                 creditos,
-                                cargaHoraria);
+                                cargaHoraria,
+                                curso,
+                                tipoDisciplina);
 
                         secretaria
                                 .gerenciarDisciplinas(
@@ -575,6 +769,16 @@ public class Main {
 
                         disciplinas.add(
                                 novaDisciplina);
+
+                        PersistenciaDisciplina.salvar(
+                                disciplinas);
+
+                        ConsoleUI.sucesso(
+                                "Disciplina "
+                                        + tipoDisciplina
+                                        + " vinculada ao curso \""
+                                        + curso.getNome()
+                                        + "\".");
 
                     } else if (escolha == 2) {
 
@@ -605,13 +809,240 @@ public class Main {
                                     .gerenciarDisciplinas(
                                             encontrada);
 
+                            encontrada.setCurso(null);
+
                             disciplinas.remove(
                                     encontrada);
+
+                            PersistenciaDisciplina.salvar(
+                                    disciplinas);
+
+                            ConsoleUI.sucesso(
+                                    "Disciplina removida.");
                         }
+
+                    } else if (escolha == 3) {
+
+                        visualizarDisciplinas(disciplinas);
+
+                        System.out.print(
+                                "Código da disciplina: ");
+
+                        int codigo = lerOpcao();
+
+                        Disciplina encontrada = null;
+
+                        for (Disciplina d : disciplinas) {
+
+                            if (d.getCodigo() == codigo) {
+                                encontrada = d;
+                                break;
+                            }
+                        }
+
+                        if (encontrada == null) {
+
+                            ConsoleUI.erro(
+                                    "Disciplina não encontrada.");
+
+                            continue;
+                        }
+
+                        System.out.print(
+                                "Novo tipo [1] Obrigatória  [2] Optativa: ");
+
+                        int novoTipo = lerOpcao();
+
+                        if (novoTipo != 1 && novoTipo != 2) {
+
+                            ConsoleUI.erro("Tipo inválido.");
+                            continue;
+                        }
+
+                        encontrada.setTipo(
+                                novoTipo == 2
+                                        ? TipoOpcao.OPTATIVA
+                                        : TipoOpcao.OBRIGATORIA);
+
+                        PersistenciaDisciplina.salvar(disciplinas);
+
+                        ConsoleUI.sucesso(
+                                "Disciplina \""
+                                        + encontrada.getNome()
+                                        + "\" agora é "
+                                        + encontrada.getTipo()
+                                        + ".");
                     }
                 }
 
                 case 4 -> {
+
+                    ConsoleUI.menu(
+                            "Gerenciar Ofertas de Disciplina",
+                            List.of(
+                                    "Adicionar oferta",
+                                    "Remover oferta",
+                                    "Listar ofertas",
+                                    "Voltar"));
+
+                    int escolha = lerOpcao();
+
+                    if (escolha == 1) {
+
+                        if (disciplinas.isEmpty()) {
+
+                            ConsoleUI.erro(
+                                    "Cadastre uma disciplina antes de criar uma oferta.");
+
+                            continue;
+                        }
+
+                        boolean temProfessor = false;
+
+                        for (Usuario usuario : usuarios) {
+
+                            if (usuario instanceof Professor) {
+                                temProfessor = true;
+                                break;
+                            }
+                        }
+
+                        if (!temProfessor) {
+
+                            ConsoleUI.erro(
+                                    "Cadastre um professor antes de criar uma oferta.");
+
+                            continue;
+                        }
+
+                        visualizarDisciplinas(disciplinas);
+
+                        System.out.print("Código da disciplina: ");
+                        int codigoDisciplina = lerOpcao();
+
+                        Disciplina disciplina = null;
+
+                        for (Disciplina d : disciplinas) {
+
+                            if (d.getCodigo() == codigoDisciplina) {
+                                disciplina = d;
+                                break;
+                            }
+                        }
+
+                        if (disciplina == null) {
+
+                            ConsoleUI.erro("Disciplina não encontrada.");
+                            continue;
+                        }
+
+                        visualizarProfessores(usuarios);
+
+                        System.out.print("ID do professor: ");
+                        int idProfessor = lerOpcao();
+
+                        Professor professor = null;
+
+                        for (Usuario usuario : usuarios) {
+
+                            if (usuario instanceof Professor p
+                                    && p.getId() != null
+                                    && p.getId() == idProfessor) {
+
+                                professor = p;
+                                break;
+                            }
+                        }
+
+                        if (professor == null) {
+
+                            ConsoleUI.erro("Professor não encontrado.");
+                            continue;
+                        }
+
+                        long maiorIdOferta = 0;
+
+                        for (OfertaDisciplina o : ofertas) {
+
+                            if (o.getId() != null
+                                    && o.getId() > maiorIdOferta) {
+
+                                maiorIdOferta = o.getId();
+                            }
+                        }
+
+                        OfertaDisciplina novaOferta = new OfertaDisciplina(
+                                maiorIdOferta + 1,
+                                disciplina,
+                                professor,
+                                semestre);
+
+                        semestre.adicionarOferta(novaOferta);
+
+                        secretaria.gerenciarOfertas(novaOferta);
+
+                        ofertas.add(novaOferta);
+
+                        PersistenciaOfertaDisciplina.salvar(ofertas);
+
+                        ConsoleUI.sucesso(
+                                "Oferta criada: "
+                                        + disciplina.getNome()
+                                        + " com "
+                                        + professor.getNome()
+                                        + " em "
+                                        + semestre.descricao()
+                                        + ".");
+
+                    } else if (escolha == 2) {
+
+                        listarOfertas(ofertas);
+
+                        System.out.print("ID da oferta a remover: ");
+                        int idOferta = lerOpcao();
+
+                        OfertaDisciplina encontrada = null;
+
+                        for (OfertaDisciplina o : ofertas) {
+
+                            if (o.getId() != null
+                                    && o.getId() == idOferta) {
+
+                                encontrada = o;
+                                break;
+                            }
+                        }
+
+                        if (encontrada == null) {
+
+                            ConsoleUI.erro("Oferta não encontrada.");
+
+                        } else if (encontrada.totalInscritos() > 0) {
+
+                            ConsoleUI.erro(
+                                    "Não é possível remover: já existem alunos matriculados.");
+
+                        } else {
+
+                            encontrada.getSemestreLetivo()
+                                    .removerOferta(encontrada);
+
+                            secretaria.gerenciarOfertas(encontrada);
+
+                            ofertas.remove(encontrada);
+
+                            PersistenciaOfertaDisciplina.salvar(ofertas);
+
+                            ConsoleUI.sucesso("Oferta removida.");
+                        }
+
+                    } else if (escolha == 3) {
+
+                        listarOfertas(ofertas);
+                    }
+                }
+
+                case 5 -> {
 
                     ConsoleUI.menu(
                             "Gerenciar Professores",
@@ -676,7 +1107,7 @@ public class Main {
 
                             if (usuario instanceof Professor p
                                     && p.getRegistro()
-                                            .equals(registro)) {
+                                    .equals(registro)) {
 
                                 encontrado = p;
                                 break;
@@ -703,7 +1134,7 @@ public class Main {
                     }
                 }
 
-                case 5 -> {
+                case 6 -> {
 
                     ConsoleUI.menu(
                             "Gerenciar Alunos",
@@ -768,7 +1199,7 @@ public class Main {
 
                             if (usuario instanceof Aluno a
                                     && a.getMatricula()
-                                            .equals(matricula)) {
+                                    .equals(matricula)) {
 
                                 encontrado = a;
                                 break;
@@ -795,7 +1226,51 @@ public class Main {
                     }
                 }
 
-                case 6 -> {
+                case 7 -> {
+
+                    if (semestre.getOfertas().isEmpty()) {
+
+                        ConsoleUI.aviso(
+                                "Não há ofertas neste semestre para avaliar.");
+
+                        continue;
+                    }
+
+                    secretaria.encerrarPeriodoMatriculas(semestre);
+
+                    PersistenciaOfertaDisciplina.salvar(ofertas);
+                    PersistenciaSemestreLetivo.salvar(semestres);
+
+                    List<List<String>> linhas = new ArrayList<>();
+
+                    for (OfertaDisciplina oferta : semestre.getOfertas()) {
+
+                        linhas.add(List.of(
+                                String.valueOf(oferta.getId()),
+                                oferta.getDisciplina().getNome(),
+                                oferta.totalInscritos()
+                                        + "/"
+                                        + oferta.getMinimoAlunos(),
+                                oferta.getStatus().toString()));
+                    }
+
+                    ConsoleUI.secao(
+                            "Encerramento do Período — "
+                                    + semestre.descricao());
+
+                    ConsoleUI.tabela(
+                            List.of(
+                                    "ID",
+                                    "Disciplina",
+                                    "Inscritos/Mínimo",
+                                    "Status"),
+                            linhas);
+
+                    ConsoleUI.info(
+                            "Ofertas com menos que o mínimo de alunos foram canceladas.");
+                }
+
+                case 8 -> {
 
                     ConsoleUI.menu(
                             "Visualizar Cadastros",
@@ -826,11 +1301,11 @@ public class Main {
                     }
                 }
 
-                case 7 -> continuar = false;
+                case 9 -> continuar = false;
 
                 default ->
-                    ConsoleUI.erro(
-                            "Opção inválida.");
+                        ConsoleUI.erro(
+                                "Opção inválida.");
             }
         }
     }
@@ -841,6 +1316,40 @@ public class Main {
         } catch (NumberFormatException e) {
             return -1;
         }
+    }
+
+    private static void listarOfertas(
+            List<OfertaDisciplina> ofertas) {
+
+        if (ofertas.isEmpty()) {
+            ConsoleUI.aviso("Nenhuma oferta cadastrada.");
+            return;
+        }
+
+        List<List<String>> linhas = new ArrayList<>();
+
+        for (OfertaDisciplina oferta : ofertas) {
+
+            linhas.add(List.of(
+                    String.valueOf(oferta.getId()),
+                    oferta.getDisciplina().getNome(),
+                    oferta.getProfessor().getNome(),
+                    oferta.getSemestreLetivo().descricao(),
+                    oferta.totalInscritos() + "/" + oferta.getVagasMaximas(),
+                    oferta.getStatus().toString()));
+        }
+
+        ConsoleUI.secao("Ofertas de Disciplina");
+
+        ConsoleUI.tabela(
+                List.of(
+                        "ID",
+                        "Disciplina",
+                        "Professor",
+                        "Semestre",
+                        "Inscritos",
+                        "Status"),
+                linhas);
     }
 
     private static void visualizarProfessores(List<Usuario> usuarios) {
@@ -924,7 +1433,9 @@ public class Main {
                     String.valueOf(curso.getCodigo()),
                     curso.getNome(),
                     String.valueOf(
-                            curso.getNumeroCreditos())));
+                            curso.getNumeroCreditos()),
+                    String.valueOf(
+                            curso.getDisciplinas().size())));
         }
 
         ConsoleUI.secao(
@@ -934,7 +1445,8 @@ public class Main {
                 List.of(
                         "Código",
                         "Nome",
-                        "Créditos"),
+                        "Créditos",
+                        "Disciplinas"),
                 linhas);
     }
 
@@ -953,7 +1465,11 @@ public class Main {
                     String.valueOf(disciplina.getCodigo()),
                     disciplina.getNome(),
                     String.valueOf(disciplina.getCreditos()),
-                    String.valueOf(disciplina.getCargaHoraria())));
+                    String.valueOf(disciplina.getCargaHoraria()),
+                    disciplina.getTipo().toString(),
+                    disciplina.getCurso() != null
+                            ? disciplina.getCurso().getNome()
+                            : "-"));
         }
 
         ConsoleUI.secao("Disciplinas Cadastradas");
@@ -963,7 +1479,9 @@ public class Main {
                         "Código",
                         "Nome",
                         "Créditos",
-                        "Carga Horária"),
+                        "Carga Horária",
+                        "Tipo",
+                        "Curso"),
                 linhas);
     }
 }

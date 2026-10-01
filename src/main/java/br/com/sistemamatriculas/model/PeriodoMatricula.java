@@ -1,4 +1,3 @@
-
 package br.com.sistemamatriculas.model;
 
 import java.time.LocalDate;
@@ -16,10 +15,11 @@ public class PeriodoMatricula {
     }
 
     public boolean estaAberto() {
-        LocalDate isNow = LocalDate.now();
-        boolean matriculaAberta = dataInicio.isEqual(isNow) || (isNow.isAfter(dataInicio) && isNow.isBefore(dataFim));
-        
-        return matriculaAberta;
+
+        LocalDate hoje = LocalDate.now();
+
+        return !hoje.isBefore(dataInicio)
+                && !hoje.isAfter(dataFim);
     }
 
     public LocalDate getDataInicio() {

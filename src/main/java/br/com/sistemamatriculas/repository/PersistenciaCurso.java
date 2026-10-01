@@ -6,15 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import br.com.sistemamatriculas.model.Curso;
-import br.com.sistemamatriculas.model.Disciplina;
 
 public class PersistenciaCurso {
 
     private static final Path ARQUIVO =
             Path.of("dados", "curso.txt");
 
-    public static List<Curso> carregar(
-            List<Disciplina> disciplinas) {
+    public static List<Curso> carregar() {
 
         List<Curso> cursos =
                 new ArrayList<>();
@@ -43,33 +41,6 @@ public class PersistenciaCurso {
                         Integer.parseInt(dados[2])
                 );
 
-                if (dados.length > 3
-                        && !dados[3].isBlank()) {
-
-                    String[] codigos =
-                            dados[3].split(",");
-
-                    for (String codigo : codigos) {
-
-                        int codigoDisciplina =
-                                Integer.parseInt(codigo);
-
-                        for (Disciplina disciplina
-                                : disciplinas) {
-
-                            if (disciplina.getCodigo()
-                                    == codigoDisciplina) {
-
-                                curso.adicionarDisciplina(
-                                        disciplina
-                                );
-
-                                break;
-                            }
-                        }
-                    }
-                }
-
                 cursos.add(curso);
             }
 
@@ -91,24 +62,10 @@ public class PersistenciaCurso {
 
         for (Curso curso : cursos) {
 
-            List<String> codigos =
-                    new ArrayList<>();
-
-            for (Disciplina disciplina
-                    : curso.getDisciplinas()) {
-
-                codigos.add(
-                        String.valueOf(
-                                disciplina.getCodigo()
-                        )
-                );
-            }
-
             String linha =
                     curso.getCodigo() + ";"
-                    + curso.getNome() + ";"
-                    + curso.getNumeroCreditos() + ";"
-                    + String.join(",", codigos);
+                            + curso.getNome() + ";"
+                            + curso.getNumeroCreditos();
 
             linhas.add(linha);
         }

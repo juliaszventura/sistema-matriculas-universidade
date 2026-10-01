@@ -24,18 +24,21 @@ public class MatriculaSemestral {
         this.itens = new ArrayList<>();
     }
 
-    public void adicionarItem(
-            OfertaDisciplina oferta,
-            TipoOpcao tipo) {
+    public void adicionarItem(OfertaDisciplina oferta) {
+
         if (oferta == null) {
             throw new IllegalArgumentException(
                     "A oferta da disciplina não pode ser nula.");
         }
 
-        if (tipo == null) {
-            throw new IllegalArgumentException(
-                    "O tipo da matrícula não pode ser nulo.");
+        if (oferta.getDisciplina() == null
+                || oferta.getDisciplina().getTipo() == null) {
+
+            throw new IllegalStateException(
+                    "A disciplina da oferta não tem o tipo definido.");
         }
+
+        TipoOpcao tipo = oferta.getDisciplina().getTipo();
 
         if (semestreLetivo == null) {
             throw new IllegalStateException(
@@ -87,10 +90,8 @@ public class MatriculaSemestral {
                     "O aluno já está matriculado nessa disciplina.");
         }
 
-        Long itemId = (long) (itens.size() + 1);
-
         ItemMatricula novoItem = new ItemMatricula(
-                itemId,
+                ItemMatricula.proximoId(),
                 tipo,
                 LocalDate.now(),
                 this,
